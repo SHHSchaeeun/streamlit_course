@@ -1,6 +1,6 @@
 import streamlit as st
 import datetime
-from todo import TodoDB
+from todo import *
 # pip install email-validator
 from email_validator import validate_email, EmailNotValidError
 import re
@@ -15,7 +15,7 @@ st.set_page_config(layout="wide")
 # 사이드 바
 sb = st.sidebar
 
-menu = sb.selectbox('메뉴', ['회원가입', '할일', '통계', '검색'], index=1)
+menu = sb.selectbox('메뉴', ['회원가입', '할일', '통계', '검색'])
 
 if menu == '회원가입':
 
@@ -76,12 +76,23 @@ if menu == '회원가입':
         users = db.readUsers()
         for user in users:
 
-            title = user[1]+'('+ user[3] + ')'
+            u = User(
+                id=user[0],
+                user_name=user[1],
+                user_gender=user[2],
+                user_id=user[3],
+                user_pw=user[4],
+                user_email=user[5],
+                user_mobile=user[6],
+                reg_date=user[7][0:19]
+            )
+
+            title = u.user_name+'('+ str(u.id) + ')'
             with st.expander(title):
-                st.write(f'{user[1]}({user[5]})')
-                st.write(f'{user[2]}')
-                st.write(f'{user[6]}')
-                st.write(f'{user[7][:19]}')
+                st.write(f"{u.user_name}({u.user_email})")
+                st.write(f"{u.user_gender}")
+                st.write(f"{u.reg_date}")
+                st.write(f"{u.reg_date[:19]}")
 
 
 elif menu == '할일':
@@ -97,6 +108,9 @@ elif menu == '할일':
     completed = st.checkbox('완료')
     btn = st.button('추가')
 
+    if completed:
+        st.balloons()
+
     if btn:
         db.insertTodo((
             todo_content,
@@ -110,6 +124,8 @@ elif menu == '할일':
 
     def change_state(*args, **kargs):
         db.updateTaskState(args)
+        if args[1]:
+            st.balloons()
 
     def change_content(*args, **kargs):
         db.updateTodoContent((args[0], st.session_state[args[1]]))
@@ -126,45 +142,51 @@ elif menu == '할일':
 
     todos = db.readTodos()
     for todo in todos:
+        task = Task(
+            id=todo[0],
+            todo_content=todo[1],
+            todo_date=todo[2],
+            todo_time=todo[3],
+            completed=todo[4],
+            reg_date=todo[5]
+        )
         col1, col2, col3, col4, col5, col6 = st.columns([1,3,2,2,3,2])
         col1.checkbox(
-            str(todo[0]),
-            value=True if todo[4] else False,
+            str(task.id),
+            value=True if task.completed else False,
             on_change=change_state,
             label_visibility='collapsed',
-            args=(todo[0], False if todo[4] else True))
+            args=(task.id, False if task.completed else True))
         col2.text_input(
-            str(todo[0]),
-            value=todo[1],
+            str(task.id),
+            value=task.todo_content,
             on_change=change_content,
             label_visibility='collapsed',
-            args=(todo[0], 'content'+str(todo[0])),
-            key='content'+str(todo[0]))
+            args=(task.id, 'content'+str(task.id)),
+            key='content'+str(task.id))
         col3.date_input(
-            str(todo[0]),
-            value=datetime.datetime.strptime(todo[2], '%Y-%m-%d').date(),
+            str(task.id),
+            value=datetime.datetime.strptime(task.todo_date, '%Y-%m-%d').date(),
             on_change=change_date,
             label_visibility='collapsed',
-            args=(todo[0], 'date'+str(todo[0])),
+            args=(task.id, 'date'+str(task.id)),
             key='date'+str(todo[0]))
         col4.time_input(
-            str(todo[0]),
-            value=datetime.datetime.strptime(todo[3], '%H:%M').time(),
+            str(task.id),
+            value=datetime.datetime.strptime(task.todo_time, '%H:%M').time(),
             on_change=change_time,
             label_visibility='collapsed',
-            args=(todo[0], 'time'+str(todo[0])),
-            key='time'+str(todo[0]))
-        col5.text(todo[5][0:19])
+            args=(task.id, 'time'+str(task.id)),
+            key='time'+str(task.id))
+        col5.text(task.reg_date[0:19])
         col6.button(
             '삭제',
             on_click=delete_todo,
-            args=(todo[0], ),
-            key='del' + str(todo[0])
+            args=(task.id, ),
+            key='del' + str(task.id)
             )
 
 elif menu == '통계':
-
-
 
     st.subheader('통계')
 
@@ -173,15 +195,20 @@ elif menu == '통계':
 
     col1, col2 = st.columns([5,5])
 
-    df_users = pd.DataFrame(users, columns=['id', '성명', '성별', '아이디', '비밀번호', '이메일', '휴대전화', '등록일시']).set_index('id')
-    df_todos = pd.DataFrame(todos, columns=['id', '할일', '날짜', '시간', '완료여부', '등록일시']).set_index('id')
+    df_users = pd.DataFrame(users,
+                            columns=['id', '성명', '성별', '아이디', '비밀번호',
+                                            '이메일', '휴대전화', '등록일시']).set_index('id')  # id 추가 안하면 드르워짐
+    df_todos = pd.DataFrame(todos,
+                            columns=['id', '할일', '날짜', '시간',
+                                            '완료여부', '등록일시']).set_index('id')
 
     with col1:
         st.markdown('#### 회원')
         st.dataframe(df_users, use_container_width=True)
 
         st.markdown('##### 회원 요약')
-        st.dataframe(df_users.describe(include='all').fillna("").astype('str'), use_container_width=True)
+        st.dataframe(df_users.describe(include='all').fillna("").astype('str'),
+                     use_container_width=True)
 
         st.markdown('##### 성별 인원')
         df_sex = df_users['성별'].value_counts()
@@ -192,17 +219,18 @@ elif menu == '통계':
         df_sex2 = Counter(df_users['성별'])
         st.dataframe(df_sex2)
 
-
     with col2:
         st.markdown('#### 할일')
         st.dataframe(df_todos, use_container_width=True)
 
         st.markdown('##### 할일 요약')
-        st.dataframe(df_todos.describe(include='all').fillna("").astype('str'), use_container_width=True)
+        st.dataframe(df_todos.describe(include='all')
+                     .fillna("").astype('str'),
+                     use_container_width=True)
 
         st.markdown('##### 조건 검색')
-        df_date = df_todos.loc[df_todos['날짜'] >= '2023-04-10'][['할일', '날짜', '시간']]
-        st.dataframe(df_date, use_container_width=True)
+        df_date = df_todos.loc[df_todos['날짜'] >= '2023-04-10'][['할일', '날짜', '시간']] # 리스트기 때문에 대괄호 두개
+        st.dataframe(df_date, use_container_width=True) # 구글링?!
 
 elif menu == '검색':
 
