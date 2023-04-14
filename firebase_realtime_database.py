@@ -16,9 +16,17 @@ db = firebase.database()
 data = {"김채은": {
     "name": '김채은',
     "age": 19,
-    "address": '대구 북구'
+    "address": '대구'
 }}
 
 # print(db.push(data))
 
-db.child("users").set(data)
+db.child("users").push(data)
+
+data2 = {"ga": {
+    "name": '김궤은',
+    "age": 23,
+    "address": '충주'
+}}
+
+db.child("users").update(data2)
