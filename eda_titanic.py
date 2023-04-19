@@ -41,7 +41,7 @@ if mnu == '타이타닉 분석':
 
 elif mnu == '타이타닉 시각화1':
 
-    st.set_option('deprecation.showPyplotGlobalUse', False)
+    st.set_option('deprecation.showPyplotGlobalUse', False)  # deprecation: 나중에 오류가 될 수 있음
     st.text('생존 여부(survived)에 따른 연령(age) 분포')
     g = sns.FacetGrid(titanic, col='survived')
     g.map(plt.hist, 'age', bins=20, color='#B0CBC4')  # histogram, bins는 가로축 구간 지정
@@ -53,7 +53,7 @@ elif mnu == '타이타닉 시각화1':
     st.pyplot()
 
     st.text('성별, 생존 여부(sex, survived)에 따른 요금(fare), 나이(age) 분포')
-    g = sns.FacetGrid(titanic, col='sex', hue='survived')  # 성별 코드에 따라 색을 다르게 표시하는 것
+    g = sns.FacetGrid(titanic, col='sex', hue='survived')  # hue: 성별을 기본으로 하되 생존 여부를 색으로 표시함
     g.map(sns.regplot, 'fare', 'age', fit_reg=False)
     g.add_legend()
     st.pyplot()
@@ -152,8 +152,8 @@ elif mnu == '타이타닉 시각화2':
 
     st.text('파이그래프')
     plt.title('titanic pie(class)')
-    df_class = pd.DataFrame(titanic.value_counts('class').tolist(),
-                            index=titanic.value_counts('class').index.tolist(),
+    df_class = pd.DataFrame(titanic.value_counts('class').tolist(),  # 시리즈
+                            index=titanic.value_counts('class').index.tolist(),  # 리스트
                             columns=['count'])
     st.dataframe(df_class)
 
@@ -167,6 +167,8 @@ elif mnu == '타이타닉 시각화2':
     st.pyplot(fig1)
 
 elif mnu == '기타 시각화':
+
+    st.set_option('deprecation.showPyplotGlobalUse', False)
 
     st.text('히트맵 - 데이터관계시각화')
     flights = sns.load_dataset('flights')
@@ -185,6 +187,7 @@ elif mnu == '기타 시각화':
     st.dataframe(tips.head())
 
     sns.scatterplot(data=tips, x='total_bill', y='tip')
+    sns.rugplot(data=tips, x='total_bill')
     st.pyplot()
 
     sns.scatterplot(data=tips, x='total_bill', y='tip', hue='time')
@@ -193,5 +196,5 @@ elif mnu == '기타 시각화':
     sns.regplot(data=tips, x='total_bill', y='tip')
     st.pyplot()
 
-    sns.regplot(data=tips, x='total_bill', y='tip', ci=99)
+    sns.regplot(data=tips, x='total_bill', y='tip', ci=50)
     st.pyplot()
