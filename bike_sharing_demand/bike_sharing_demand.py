@@ -8,7 +8,7 @@ import calendar
 data_path = 'bike_sharing_demand/'
 train = pd.read_csv(data_path + 'train.csv', parse_dates=['datetime'])
 test = pd.read_csv(data_path + 'test.csv', parse_dates=['datetime'])
-submission= pd.read_csv(data_path + 'sampleSubmission.csv', parse_dates=['datetime'])
+submission = pd.read_csv(data_path + 'sampleSubmission.csv', parse_dates=['datetime'])
 
 def feature_engineering():
     train['year'] = train['datetime'].dt.year
@@ -73,7 +73,7 @@ if mnu == '설명':
 elif mnu == 'EDA':
 
     st.subheader('EDA')
-    st.markdown('- (훈련 데이터 shape, 텍스트 데이터 shape')
+    st.markdown('- 훈련 데이터 shape, 테스트 데이터 shape')
     st.text(f'({train.shape}), ({test.shape})')
     st.markdown('- 훈련 데이터')
     st.dataframe(train.head())
@@ -133,7 +133,7 @@ elif mnu == '시각화':
 
     st.subheader('시각화')
 
-    st.markdown('**: blue[그래프를 해석하세요.]**')
+    st.markdown('**:blue[그래프를 해석하세요.]**')
 
     mpl.rc('font', size=12) 
     st.markdown('- count의 분포도')
@@ -219,7 +219,7 @@ elif mnu == '시각화':
     st.markdown('**2. 파생피처 추가:** datetime 피처는 여러 가지 정보의 혼합체이므로'
                 '각각을 분리해 year, month, day, hour, minute, second 피처를 생성할 수 있다.')
     st.markdown('**3. 파생피처 추가:** datetime 에 숨어 있는 또 다른 정보인 요일(weekday) 피처를 추가한다.')
-    st.markdown('**4. 피처 제거: ** 테스트 데이터에 없는 피처는 훈련에 사용해도 큰 의미가 없다.' 
+    st.markdown('**4. 피처 제거:** 테스트 데이터에 없는 피처는 훈련에 사용해도 큰 의미가 없다.' 
                 '따라서 훈련 데이터에만 있는 casual과 registered 피처는 제거한다.')
     st.markdown('**5. 피처 제거:** datetime 피처는 인덱스 역할만 하므로 타깃값 예측에 아무런 도움이 되지 않는다.')
     st.markdown('**6. 피처 제거:** date 피처가 제공하는 정보도 year, month, day 피처에 담겨 있다.')
