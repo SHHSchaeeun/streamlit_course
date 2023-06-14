@@ -1,1 +1,6 @@
+streamlit
 seaborn
+pandas
+io
+
+ploty
